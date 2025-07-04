@@ -40,7 +40,7 @@ async function RootLayout({ children }: { children: React.ReactNode }) {
           }}
         />
 
-        <style>@layer normalize, scale, typography, base, layouts, themes, utilities;</style>
+        <style>@layer normalize, scale, base, components, typography, layouts, themes, utilities;</style>
       </head>
 
       <body>

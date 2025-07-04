@@ -1,4 +1,5 @@
 const path = require('path');
+const resolve = require('resolve');
 
 
 function resolveAlias(id, basedir, importOptions) {
@@ -6,15 +7,12 @@ function resolveAlias(id, basedir, importOptions) {
 
   // resolve @Styles alias
   if (/^@Styles/.test(id)) {
-    const [ assetType, filename ] = id.split('/');
-    return `${root}/assets/styles/${filename}`;
+    const [, filename] = id.split('/');
+    return path.resolve(root, 'assets/styles', filename);
   }
 
-  // resolve relative path, @import './components/style.css'; prefix with './' or '../'
-  // if (/^\./.test(id)) return path.resolve(basedir, id);
-
-  // resolve node_modules, @import 'normalize.css/normalize.css'
-  // return path.resolve('./node_modules', id);
+  // For other paths, use the `resolve` package which mimics Node's resolution algorithm
+  return resolve.sync(id, { basedir });
 }
 
 

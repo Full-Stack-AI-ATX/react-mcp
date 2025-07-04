@@ -1,0 +1,98 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--8px);
+  white-space: nowrap;
+  border-radius: var(--6px);
+  font-size: var(--14px);
+  font-weight: 500; /* font-medium */
+  transition: all 0.2s;
+}
+
+.button:focus-visible {
+  outline: var(--2px) solid hsl(var(--ring));
+  outline-offset: var(--2px);
+}
+
+.button:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.button svg {
+  pointer-events: none;
+  width: var(--16px);
+  height: var(--16px);
+  flex-shrink: 0;
+}
+
+/* Variants */
+.default {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+.default:hover {
+  background-color: hsl(var(--primary) / 0.9);
+}
+
+.destructive {
+  background-color: hsl(var(--destructive));
+  color: hsl(var(--destructive-foreground));
+}
+.destructive:hover {
+  background-color: hsl(var(--destructive) / 0.9);
+}
+
+.outline {
+  border: 1px solid hsl(var(--input));
+  background-color: hsl(var(--background));
+}
+.outline:hover {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.secondary {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+}
+.secondary:hover {
+  background-color: hsl(var(--secondary) / 0.8);
+}
+
+.ghost:hover {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.link {
+  color: hsl(var(--primary));
+  text-underline-offset: var(--4px);
+}
+.link:hover {
+  text-decoration: underline;
+}
+
+/* Sizes */
+.sizeDefault {
+  height: var(--40px);
+  padding: var(--8px) var(--16px);
+}
+
+.sizeSm {
+  height: var(--36px);
+  border-radius: var(--6px);
+  padding: 0 var(--12px);
+}
+
+.sizeLg {
+  height: var(--44px);
+  border-radius: var(--6px);
+  padding: 0 var(--32px);
+}
+
+.sizeIcon {
+  height: var(--40px);
+  width: var(--40px);
+}

@@ -46,16 +46,16 @@
   }
 
   h1 {
-    font-size:    var(--32px);
+    font-size:    var(--64px);
     font-weight:  var(--medium);
     line-height:  var(--leading-packed);
-    margin-block: var(--24px);
+    margin-block: var(--48px);
   }
   h2 {
-    font-size:    var(--24px);
+    font-size:    var(--32px);
     font-weight:  var(--regular);
     line-height:  var(--leading-normal);
-    margin-block: var(--20px);
+    margin-block: var(--24px);
   }
   h3 {
     font-size:    var(--20px);
@@ -65,14 +65,14 @@
   }
 
 
-  @media (--from-laptop) {
+  @media (--until-laptop) {
     h1 {
-      font-size:    var(--64px);
-      margin-block: var(--48px);
-    }
-    h2 {
       font-size:    var(--32px);
       margin-block: var(--24px);
+    }
+    h2 {
+      font-size:    var(--24px);
+      margin-block: var(--20px);
     }
   }
 }

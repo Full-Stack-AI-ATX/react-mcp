@@ -1,0 +1,25 @@
+.root {
+  position: relative;
+  display: flex;
+  height: var(--40px);
+  width: var(--40px);
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 9999px; /* rounded-full */
+}
+
+.image {
+  aspect-ratio: 1 / 1;
+  height: 100%;
+  width: 100%;
+}
+
+.fallback {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px; /* rounded-full */
+  background-color: hsl(var(--muted));
+}

@@ -19,12 +19,16 @@
       "@/*":            ["./src/*"],
       "@Components/*":  ["./src/components/*"],
       "@Components":    ["./src/components"],
+      "@Images/*":      ["./src/assets/images/*"],
+      "@Images":        ["./src/assets/images"],
       "@Lib/*":         ["./src/lib/*"],
       "@Lib":           ["./src/lib"],
       "@Pages/*":       ["./src/pages/*"],
       "@Pages":         ["./src/pages"],
       "@Styles/*":      ["./src/assets/styles/*"],
       "@Styles":        ["./src/assets/styles"],
+      "@Types/*":       ["./src/types/*"],
+      "@Types":         ["./src/types"],
       "@Utils/*":       ["./src/utils/*"],
       "@Utils":         ["./src/utils"]
     }

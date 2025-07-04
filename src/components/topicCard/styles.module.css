@@ -1,0 +1,124 @@
+:global([data-theme="light"]) .card,
+:global([data-theme="dark"]) .card {
+  --topic-color-blue:   #3B82F6;
+  --topic-color-green:  #22C55E;
+  --topic-color-purple: #A855F7;
+  --topic-color-red:    #EF4444;
+  --topic-color-orange: #F97316;
+  --topic-color-cyan:   #06B6D4;
+}
+
+.card {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.card:not(.cardActive):hover {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.cardActive {
+  box-shadow: 0 0 0 2px hsl(var(--ring)), 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.header {
+  padding-bottom: var(--12px);
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.iconContainer {
+  display: flex;
+  align-items: center;
+}
+
+.iconContainer > :not([hidden]) ~ :not([hidden]) {
+  margin-left: var(--12px);
+}
+
+.iconWrapper {
+  padding: var(--12px);
+  border-radius: var(--12px);
+  color: white;
+}
+
+.icon {
+  width: var(--36px);
+}
+
+.title {
+  font-size: var(--18px);
+}
+
+.description {
+  font-size: var(--14px);
+  color: hsl(var(--muted-foreground));
+  margin-top: var(--4px);
+}
+
+.status-active {
+  background-color: #dcfce7;
+  color:            #166534;
+  border-color:     #bbf7d0;
+}
+
+.status-warning {
+  background-color: #fef9c3;
+  color:            #854d0e;
+  iborder-color:    #fde68a;
+}
+
+.status-error {
+  background-color: #fee2e2;
+  color:            #991b1b;
+  border-color:     #fecaca;
+}
+
+.status-idle {
+  background-color: #f3f4f6;
+  color:            #1f2937;
+  border-color:     #e5e7eb;
+}
+
+.content {}
+
+.contentWrapper > :not([hidden]) ~ :not([hidden]) {
+  margin-top: var(--8px);
+}
+
+.lastActivity {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--14px);
+}
+
+.lastActivityLabel {
+  color: hsl(var(--muted-foreground));
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--8px);
+  padding-top: var(--8px);
+  border-top: 1px solid hsl(var(--border));
+}
+
+.metricItem {
+  text-align: center;
+}
+
+.metricValue {
+  font-size: var(--14px);
+  font-weight: 500;
+}
+
+.metricKey {
+  font-size: var(--12px);
+  color: hsl(var(--muted-foreground));
+  text-transform: capitalize;
+}
