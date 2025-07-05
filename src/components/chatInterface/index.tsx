@@ -9,7 +9,7 @@ import { Send, Bot, User, Trash2 } from 'lucide-react';
 import { useChat } from '@ai-sdk/react';
 
 import Button from '@Components/ui/button';
-import Input from '@Components/ui/input';
+import Textarea from '@Components/ui/textarea';
 import ScrollArea from '@Components/ui/scrollArea';
 import { Avatar, AvatarFallback } from '@Components/ui/avatar';
 import Badge from '@Components/ui/badge';
@@ -30,6 +30,7 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const hasMessages = messages.length > 0;
+  const submitButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -39,6 +40,15 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
 
   const clearHistory = () => {
     setMessages([]);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      if (input.trim() && submitButtonRef.current) {
+        submitButtonRef.current.click();
+      }
+    }
   };
 
   const renderMessage = (message: Message) => (
@@ -113,11 +123,15 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
         </div>
         <div className={styles.centeredContent}>
           <AgentIntro />
-          <form onSubmit={handleSubmit} className={styles['inputContainer']}>
+          <form
+            className={styles['inputContainer']}
+            onSubmit={handleSubmit}
+          >
             <div className={styles['inputWrapper']}>
-              <Input
+              <Textarea
                 value={input}
                 onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
                 placeholder={
                   activeTopic
                     ? `Ask about ${activeTopic.name.toLowerCase()}...`
@@ -125,7 +139,7 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
                 }
                 className={styles['input']}
               />
-              <Button type="submit" disabled={!input.trim() || status === 'submitted'}>
+              <Button ref={submitButtonRef} type="submit" disabled={!input.trim() || status === 'submitted'}>
                 <Send className={styles['sendIcon']} />
               </Button>
             </div>
@@ -152,13 +166,14 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
       {/* Input */}
       <form onSubmit={handleSubmit} className={styles['inputContainer']}>
         <div className={styles['inputWrapper']}>
-          <Input
+          <Textarea
             value={input}
             onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
             placeholder={activeTopic ? `Ask about ${activeTopic.name.toLowerCase()}...` : 'Ask me anything about your infrastructure...'}
             className={styles['input']}
           />
-          <Button type="submit" disabled={!input.trim() || status === 'submitted'}>
+          <Button ref={submitButtonRef} type="submit" disabled={!input.trim() || status === 'submitted'}>
             <Send className={styles['sendIcon']} />
           </Button>
         </div>
@@ -166,5 +181,6 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
     </div>
   );
 }
+
 
 export default ChatInterface;
