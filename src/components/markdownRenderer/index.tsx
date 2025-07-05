@@ -6,16 +6,24 @@ import remarkGfm      from 'remark-gfm';
 
 import CodeBlock      from '@Components/codeBlock';
 
+import styles from './styles.module.css';
+
 
 interface MarkdownRendererProps {
   content: string;
 }
 
 const MarkdownRenderer = ({ content }: MarkdownRendererProps) => {
+  const processedContent = content.replace(/\\n/g, '\n');
+  console.log('processedContent', processedContent);
+
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
+        ul: ({ node, ...props }) => <ul className={styles.list} {...props} />,
+        ol: ({ node, ...props }) => <ol className={styles.list} {...props} />,
+        li: ({ node, ...props }) => <li className={styles.listItem} {...props} />,
         code(props: any) {
           const { node, inline, className, children, ...rest } = props;
 
@@ -34,7 +42,7 @@ const MarkdownRenderer = ({ content }: MarkdownRendererProps) => {
         },
       }}
     >
-      {content}
+      {processedContent}
     </ReactMarkdown>
   );
 };

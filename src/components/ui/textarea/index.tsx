@@ -25,7 +25,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, React.ComponentProps<'textarea'
       <textarea
         ref={internalRef}
         rows={1}
-        className={`${styles.textarea} ${className || ''}`}
+        className={`${styles['textarea']} ${className || ''}`}
         {...props}
       />
     );

@@ -147,7 +147,6 @@
 
 .messageText {
   font-size: var(--14px);
-  white-space: pre-wrap;
   word-wrap: break-word;
 }
 
@@ -157,6 +156,16 @@
 
 .messageText p:last-child {
   margin-bottom: 0;
+}
+
+.messageText p + ul,
+.messageText p + ol {
+  margin-top: 0.5rem;
+}
+
+.messageText ul:last-child,
+.messageText ol:last-child {
+  margin-bottom: 0.5rem;
 }
 
 .timestamp {

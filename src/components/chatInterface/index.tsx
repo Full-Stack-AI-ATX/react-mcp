@@ -1,42 +1,58 @@
 'use client';
 
-import type React from 'react';
-import type { Topic } from '@Types/workspace';
-import type { Message } from 'ai/react';
+import type React                   from 'react';
+import type { Topic }               from '@Types/workspace';
+import type { Message }             from 'ai/react';
 
-import { useRef, useEffect } from 'react';
-import { Send, Bot, User, Trash2 } from 'lucide-react';
-import { useChat } from '@ai-sdk/react';
+import { useId, useRef, useEffect } from 'react';
+import { Send, Bot, User, Trash2 }  from 'lucide-react';
+import { useChat }                  from '@ai-sdk/react';
 
-import Button from '@Components/ui/button';
-import Textarea from '@Components/ui/textarea';
-import ScrollArea from '@Components/ui/scrollArea';
-import { Avatar, AvatarFallback } from '@Components/ui/avatar';
-import Badge from '@Components/ui/badge';
-import AgentIntro from '@Components/agentIntro';
-import MarkdownRenderer from '@Components/markdownRenderer';
+import Button                       from '@Components/ui/button';
+import Textarea                     from '@Components/ui/textarea';
+import ScrollArea                   from '@Components/ui/scrollArea';
+import { Avatar, AvatarFallback }   from '@Components/ui/avatar';
+import Badge                        from '@Components/ui/badge';
+import AgentIntro                   from '@Components/agentIntro';
+import MarkdownRenderer             from '@Components/markdownRenderer';
 
-import styles from './styles.module.css';
+import styles                       from './styles.module.css';
+
 
 interface ChatInterfaceProps {
-  activeTopic: Topic | null;
+  activeTopic: Topic
 }
 
 function ChatInterface({ activeTopic }: ChatInterfaceProps) {
-  const { messages, input, handleInputChange, handleSubmit, setMessages, status } = useChat({
-    id: activeTopic?.id ?? 'general',
+  const fallbackId = useId();
+  const chatId = activeTopic?.id ? `${activeTopic.id}-${fallbackId}` : fallbackId;
+
+  const { messages, input, handleInputChange, handleSubmit, setMessages, append, data, setData, status } = useChat({
+    id: chatId,
     api: '/api/chat',
+    initialInput: 'list schemas',
+    maxSteps: 5,
+    onFinish: async (message, options) => {
+      console.log('useChat finished.', {
+        message,
+        finishReason: options.finishReason,
+        usage: options.usage
+      });
+    },
+    onError: (error) => {
+      console.error('useChat error:', error);
+    }
   });
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const hasMessages = messages.length > 0;
-  const submitButtonRef = useRef<HTMLButtonElement>(null);
+  const formRef       = useRef<HTMLFormElement>(null);
+  const hasMessages   = messages.length > 0;
 
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, data]);
 
   const clearHistory = () => {
     setMessages([]);
@@ -45,8 +61,8 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      if (input.trim() && submitButtonRef.current) {
-        submitButtonRef.current.click();
+      if (input.trim() && formRef.current) {
+        formRef.current.requestSubmit();
       }
     }
   };
@@ -124,8 +140,12 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
         <div className={styles.centeredContent}>
           <AgentIntro />
           <form
+            ref={formRef}
             className={styles['inputContainer']}
-            onSubmit={handleSubmit}
+            onSubmit={(e) => {
+              setData(undefined);
+              handleSubmit(e);
+            }}
           >
             <div className={styles['inputWrapper']}>
               <Textarea
@@ -139,7 +159,7 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
                 }
                 className={styles['input']}
               />
-              <Button ref={submitButtonRef} type="submit" disabled={!input.trim() || status === 'submitted'}>
+              <Button type="submit" disabled={!input.trim() || status === 'submitted'}>
                 <Send className={styles['sendIcon']} />
               </Button>
             </div>
@@ -164,7 +184,14 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
       </ScrollArea>
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className={styles['inputContainer']}>
+      <form
+        ref={formRef}
+        className={styles['inputContainer']}
+        onSubmit={(e) => {
+          setData(undefined);
+          handleSubmit(e);
+        }}
+      >
         <div className={styles['inputWrapper']}>
           <Textarea
             value={input}
@@ -173,7 +200,7 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
             placeholder={activeTopic ? `Ask about ${activeTopic.name.toLowerCase()}...` : 'Ask me anything about your infrastructure...'}
             className={styles['input']}
           />
-          <Button ref={submitButtonRef} type="submit" disabled={!input.trim() || status === 'submitted'}>
+          <Button type="submit" disabled={!input.trim() || status === 'submitted'}>
             <Send className={styles['sendIcon']} />
           </Button>
         </div>

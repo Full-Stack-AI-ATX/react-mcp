@@ -7,7 +7,7 @@ const Input = forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(
     return (
       <input
         type={type}
-        className={`${styles.input} ${className || ''}`}
+        className={`${styles['input']} ${className || ''}`}
         ref={ref}
         {...props}
       />
