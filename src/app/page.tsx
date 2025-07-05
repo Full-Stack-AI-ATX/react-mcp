@@ -23,7 +23,7 @@ function Page() {
 function AIWorkspaceDashboard() {
   const [activeTopic, setActiveTopic] = useState<Topic | null>(null)
   const [messages, setMessages] = useState<Message[]>(Object.values(sampleConversations).flat())
-  const [sidebarVisible, setSidebarVisible] = useState(true)
+  const [sidebarVisible, setSidebarVisible] = useState(false)
 
   const handleTopicSelect = (topic: Topic) => {
     // If the same topic is clicked again, deselect it (return to general chat)

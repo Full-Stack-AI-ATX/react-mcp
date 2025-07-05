@@ -9,7 +9,7 @@
   border-radius: inherit;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 
 .scrollbar {
@@ -38,6 +38,6 @@
 .thumb {
   position: relative;
   flex-grow: 1;
-  border-radius: 9999px; /* rounded-full */
+  border-radius: 9999px;
   background-color: hsl(var(--border));
 }

@@ -71,7 +71,7 @@ function ThemeToggle() {
           isDark ? styles.moonIconVisible : styles.moonIconHidden
         }`}
       />
-      <span className="sr-only">Toggle theme</span>
+      <span className={styles['srOnly']}>Toggle theme</span>
     </Button>
   );
 }

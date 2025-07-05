@@ -1,0 +1,45 @@
+.container {
+  background-color: hsl(var(--muted));
+  border-radius: var(--8px);
+  margin: var(--16px) 0;
+  font-family: var(--font-mono);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--8px) var(--12px);
+  background-color: hsl(var(--secondary));
+  border-bottom: 1px solid hsl(var(--border));
+  border-top-left-radius: var(--8px);
+  border-top-right-radius: var(--8px);
+}
+
+.language {
+  font-size: var(--14px);
+  color: hsl(var(--muted-foreground));
+}
+
+.copyButton {
+  display: flex;
+  align-items: center;
+  gap: var(--8px);
+  font-size: var(--14px);
+  color: hsl(var(--muted-foreground));
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--4px) var(--8px);
+  border-radius: var(--6px);
+}
+
+.copyButton:hover {
+  background-color: hsl(var(--accent));
+}
+
+.pre {
+  margin: 0;
+  padding: var(--16px);
+  overflow-x: auto;
+}

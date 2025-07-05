@@ -13,6 +13,7 @@
 .headerContent {
   display: flex;
   align-items: center;
+  gap: var(--12px);
 }
 
 .headerContent > :not([hidden]) ~ :not([hidden]) {
@@ -20,6 +21,9 @@
 }
 
 .iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: var(--8px);
   border-radius: var(--8px);
   color: white;
@@ -36,7 +40,7 @@
 
 .title {
   font-size: var(--18px);
-  font-weight: 600;
+  font-weight: var(--semi-bold);
 }
 
 .description {
@@ -45,6 +49,11 @@
 }
 
 .badge {
+  margin-left: var(--16px);
+  white-space: nowrap;
+}
+
+.clearButton {
   margin-left: auto;
 }
 
@@ -55,6 +64,9 @@
 }
 
 .messagesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--16px);
   width: 100%;
 }
 
@@ -63,6 +75,11 @@
 }
 
 .emptyStateContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--16px);
   text-align: center;
   padding-top: var(--32px);
   padding-bottom: var(--32px);
@@ -75,14 +92,12 @@
 .emptyStateIcon {
   height: var(--64px);
   width: var(--64px);
-  margin-left: auto;
-  margin-right: auto;
   color: hsl(var(--muted-foreground));
 }
 
 .emptyStateTitle {
   font-size: var(--20px);
-  font-weight: 600;
+  font-weight: var(--semi-bold);
 }
 
 .emptyStateDescription {
@@ -93,10 +108,7 @@
 .messageRow {
   display: flex;
   align-items: flex-start;
-}
-
-.messageRow > :not([hidden]) ~ :not([hidden]) {
-  margin-left: var(--12px);
+  gap: var(--12px);
 }
 
 .messageRowUser {
@@ -135,7 +147,16 @@
 
 .messageText {
   font-size: var(--14px);
-  white-space: pre-line;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.messageText p:first-child {
+  margin-top: 0;
+}
+
+.messageText p:last-child {
+  margin-bottom: 0;
 }
 
 .timestamp {
@@ -152,10 +173,7 @@
 
 .inputWrapper {
   display: flex;
-}
-
-.inputWrapper > :not([hidden]) ~ :not([hidden]) {
-  margin-left: var(--8px);
+  gap: var(--8px);
 }
 
 .input {
@@ -165,4 +183,38 @@
 .sendIcon {
   height: var(--16px);
   width: var(--16px);
+}
+
+/* styles for the initial centered layout of the chat interface */
+.initial {
+  justify-content: flex-start;
+}
+
+.initial .scrollArea {
+  display: none;
+}
+
+.initial .messagesContainer {
+  display: block;
+}
+
+.initial .emptyStateContainer {
+  padding: 0;
+}
+
+.initial .inputContainer {
+  border-top: none;
+  background-color: transparent;
+  padding: var(--16px);
+  width: 100%;
+}
+
+.centeredContent {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin: 0 auto;
 }

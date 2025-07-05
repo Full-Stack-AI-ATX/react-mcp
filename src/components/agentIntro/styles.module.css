@@ -1,0 +1,26 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--16px);
+  color: hsl(var(--muted-foreground));
+}
+
+.icon {
+  width: var(--48px);
+  height: var(--48px);
+  stroke-width: 1.5;
+}
+
+.title {
+  font-size: var(--20px);
+  font-weight: var(--semi-bold);
+  color: hsl(var(--foreground));
+  margin-bottom: var(--4px);
+}
+
+.description {
+  max-width: 480px;
+  margin: 0 auto;
+}
