@@ -15,7 +15,6 @@ interface MarkdownRendererProps {
 
 const MarkdownRenderer = ({ content }: MarkdownRendererProps) => {
   const processedContent = content.replace(/\\n/g, '\n');
-  console.log('processedContent', processedContent);
 
   return (
     <ReactMarkdown
