@@ -24,8 +24,8 @@ interface ChatInterfaceProps {
 }
 
 function ChatInterface({ activeTopic }: ChatInterfaceProps) {
-  const fallbackId = useId();
-  const chatId = activeTopic?.id ? `${activeTopic.id}-${fallbackId}` : fallbackId;
+  const randomId  = useId();
+  const chatId    = activeTopic?.id ? `${activeTopic.id}-${randomId}` : `general-${randomId}`;
 
   const { messages, input, handleInputChange, handleSubmit, setMessages, append, data, setData, status } = useChat({
     id: chatId,

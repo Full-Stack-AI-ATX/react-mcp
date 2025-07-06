@@ -1,27 +1,28 @@
 import type {
   CoreMessage,
-  Tool as VercelTool,
   ToolCallPart,
   ToolResultPart
-}                                           from 'ai';
+}                             from 'ai';
 
-import { streamText }                       from 'ai';
-import { openai }                           from '@ai-sdk/openai';
+import { streamText }         from 'ai';
+import { openai }             from '@ai-sdk/openai';
 
-import { getVercelTools }                   from '@Lib/mcp/vercelToolCache';
-import { resourceTools }                    from '@Lib/mcp/vercelResourceTools';
-import { summaryOfResources }               from '@Lib/mcp/vercelResourceTools';
-import { SYSTEM_PROMPT }                    from '@Lib/prompts/systemPrompt';
+import { getMCPTools }        from '@Lib/mcp/streamTextToolCache';
+import {
+  resourceTools,
+  summaryOfResources
+}                             from '@Lib/mcp/streamTextResourceTools';
+import { SYSTEM_PROMPT }      from '@Lib/prompts/systemPrompt';
 
 
-export async function POST(req: Request) {
+async function POST(req: Request) {
   console.log('Received POST request to /api/chat');
   const { messages }: { messages: CoreMessage[] } = await req.json();
   console.log('Request body parsed:', { messages });
 
   console.log('Fetching tools and summary...');
   const [tools, resSummary] = await Promise.all([
-    getVercelTools(),
+    getMCPTools(),
     summaryOfResources()
   ]);
 
@@ -50,6 +51,7 @@ export async function POST(req: Request) {
       system: systemContext,
       messages,
       tools: allTools,
+      toolChoice: 'auto',
       maxSteps: 5,
       onStepFinish: async (result) => {
         console.log('--- Step Finished ---');
@@ -85,3 +87,6 @@ export async function POST(req: Request) {
     });
   }
 }
+
+
+export { POST };

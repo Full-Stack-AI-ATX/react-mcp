@@ -27,7 +27,7 @@ function jsonSchemaToZod(schema: any): z.ZodTypeAny {
   return z.object(shape);
 }
 
-function formatToolForVercel(mcpTool: MCPTool): VercelTool {
+function formatToolForStreamText(mcpTool: MCPTool): VercelTool {
   return {
     description: mcpTool.description,
     parameters: jsonSchemaToZod(mcpTool.inputSchema),
@@ -49,7 +49,7 @@ function formatToolForVercel(mcpTool: MCPTool): VercelTool {
   };
 }
 
-async function fetchAndCacheVercelTools(): Promise<Record<string, VercelTool>> {
+async function fetchAndCacheMCPTools(): Promise<Record<string, VercelTool>> {
   const connected = await connectMcpClient();
   if (!connected) {
     console.error('Cannot fetch tools: Failed to connect to MCP server.');
@@ -68,7 +68,7 @@ async function fetchAndCacheVercelTools(): Promise<Record<string, VercelTool>> {
     const formattedTools = Object.fromEntries(
       mcpTools.map((tool) => [
         tool.name,
-        formatToolForVercel(tool),
+        formatToolForStreamText(tool),
       ]),
     );
 
@@ -81,11 +81,11 @@ async function fetchAndCacheVercelTools(): Promise<Record<string, VercelTool>> {
   }
 }
 
-export async function getVercelTools(): Promise<Record<string, VercelTool>> {
+export async function getMCPTools(): Promise<Record<string, VercelTool>> {
   if (cachedVercelTools) {
     console.log('Returning cached Vercel tools.');
     return cachedVercelTools;
   }
   console.log('No Vercel tools in cache, fetching from MCP server...');
-  return fetchAndCacheVercelTools();
+  return fetchAndCacheMCPTools();
 }

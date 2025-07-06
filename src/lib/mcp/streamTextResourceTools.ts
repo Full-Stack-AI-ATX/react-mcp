@@ -1,4 +1,4 @@
-import type { Tool as VercelTool }      from 'ai';
+import type { Tool }      from 'ai';
 import {
   ResourceListChangedNotificationSchema,
   ResourceUpdatedNotificationSchema
@@ -244,7 +244,7 @@ export async function summaryOfResources(): Promise<string> {
 // It cannot natively understand the concept of a "resource."
 // Therefore, your job as the client is to create a "virtual" set of tools that represent the resource-access
 // capabilities of your MCP server.
-export const resourceTools: Record<string, VercelTool> = {
+export const resourceTools: Record<string, Tool> = {
   listSchemas: tool({
     description: 'List available PostgreSQL schemas',
     parameters: z.object({}),
