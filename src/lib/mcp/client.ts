@@ -7,7 +7,7 @@ const transport = new StreamableHTTPClientTransport(
   new URL(mcpServerUrl)
 );
 
-export const mcpClient = new Client(
+const rawMcpClient = new Client(
   {
     name: 'react-mcp',
     version: '1.0.0'
@@ -17,7 +17,7 @@ export const mcpClient = new Client(
 let isConnected = false;
 let connectionPromise: Promise<boolean> | null = null;
 
-export async function connectMcpClient(): Promise<boolean> {
+async function connectMcpClient(): Promise<boolean> {
   console.log('Attempting to connect MCP client...');
   if (isConnected) {
     console.log('MCP client is already connected.');
@@ -33,21 +33,32 @@ export async function connectMcpClient(): Promise<boolean> {
   connectionPromise = (async () => {
     try {
       console.log(`Executing mcpClient.connect() to ${mcpServerUrl}...`);
-      await mcpClient.connect(transport);
-      console.log('mcpClient.connect() call completed.');
+      await rawMcpClient.connect(transport);
       isConnected = true;
       console.log('MCP client connected successfully.');
       return true;
     } catch (error) {
       console.error('Failed to connect MCP client:', error);
       isConnected = false;
-      // Reset the promise on failure to allow for new connection attempts.
-      connectionPromise = null;
-      return false;
-    } finally {
-      console.log('MCP client connection process finished.');
+      connectionPromise = null; // Reset for subsequent attempts
+      throw error; // Re-throw to propagate the connection failure
     }
   })();
 
   return connectionPromise;
 }
+
+export const mcpClient = new Proxy(rawMcpClient, {
+  get(target, prop, receiver) {
+    const original = Reflect.get(target, prop, receiver);
+
+    if (typeof original === 'function') {
+      return async function (...args: any[]) {
+        await connectMcpClient();
+        return original.apply(target, args);
+      };
+    }
+
+    return original;
+  }
+});

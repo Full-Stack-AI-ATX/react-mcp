@@ -44,13 +44,16 @@
 }
 
 .description {
-  font-size: var(--14px);
-  color: hsl(var(--muted-foreground));
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.usageCounter {
+  margin-left: auto;
 }
 
 .badge {
-  margin-left: var(--16px);
-  white-space: nowrap;
+  margin-left: 1rem;
 }
 
 .clearButton {

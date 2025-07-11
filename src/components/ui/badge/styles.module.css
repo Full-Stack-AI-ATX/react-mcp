@@ -50,3 +50,15 @@
   color: hsl(var(--foreground));
   border-color: hsl(var(--border));
 }
+
+.success {
+  border-color: transparent;
+  background-color: hsl(var(--success));
+  color: hsl(var(--success-foreground));
+}
+
+.warning {
+  border-color: transparent;
+  background-color: hsl(var(--warning));
+  color: hsl(var(--warning-foreground));
+}

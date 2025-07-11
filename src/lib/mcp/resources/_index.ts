@@ -1,7 +1,8 @@
 import type { Tool }      from 'ai';
 import {
   ResourceListChangedNotificationSchema,
-  ResourceUpdatedNotificationSchema
+  ResourceUpdatedNotificationSchema,
+  Resource
 }                                       from '@modelcontextprotocol/sdk/types.js';
 import { tool }                         from 'ai';
 import { z }                            from 'zod';
@@ -11,10 +12,13 @@ import { findBestMatch }                from '@Utils/findBestMatch';
 
 
 // in-memory caches for schemas, tables, table schemas, and summary.
+let mcpResourcesCache: Resource[] | null = null;
+let resourceSummaryCache: string | null = null;
+let dbConnectionCache: string | null = null;
+let dbUserCache: string[] | null = null;
 let schemasCache: string[] | null = null;
 let tablesCache: Record<string, string[]> = {};
 let tableSchemaCache: Record<string, unknown> = {};
-let summaryCache: string | null = null;
 
 // Ensure we only hook up notifications once
 let subscribed = false;
@@ -46,15 +50,36 @@ async function ensureSubscription(): Promise<void> {
 
 async function listSchemas(): Promise<string[]> {
   await ensureSubscription();
-  if (schemasCache) return schemasCache;
 
-  const resp = await mcpClient.listResources({ kind: 'schema' });
-  schemasCache = Array.isArray(resp.resources)
-    ? resp.resources
-      .map((r) => r.name!)
-      .filter((n): n is string => typeof n === 'string')
-    : [];
-  return schemasCache;
+  if (schemasCache) {
+    console.log('[listSchemas] Returning cached schemas.');
+    return schemasCache;
+  }
+
+  let schemas: string[] = [];
+  try {
+    const uri = `postgresql://${process.env.POSTGRES_DB}/schemas`;
+    console.log(`[listSchemas] Fetching schemas from URI: ${uri}`);
+
+    const resp = await mcpClient.readResource({ uri });
+    if (!resp.contents || !resp.contents[0] || !resp.contents[0].text) {
+      throw new Error('Invalid [contents] response from MCP client.');
+    }
+
+    schemas = JSON.parse(resp.contents[0].text as string).schemas as string[];
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      console.error('[listSchemas] JSON.parse error while parsing [contents]:', error);
+      throw new Error('Failed to parse [contents] from server response. The data format may be invalid.');
+    } else {
+      console.error('[listSchemas] Error fetching schemas:', error);
+      throw new Error('Failed to fetch schemas. Please try again later.');
+    }
+  }
+
+    schemasCache = schemas;
+    console.log(`[listSchemas] Successfully fetched ${schemas.length} schemas.`);
+    return schemas;
 }
 
 async function listTables(args: { schema: string }): Promise<string[]> {
@@ -164,7 +189,7 @@ async function listConnections(): Promise<Array<{ baseUri: string; dbName: strin
     await ensureSubscription();
     let resp;
     try {
-      resp = await mcpClient.listResources({ kind: 'database' });
+      resp = await mcpClient.listResources();
     } catch (err) {
       console.error('[listConnections] Error fetching database resources:', err);
       return [];
@@ -201,41 +226,39 @@ async function listConnections(): Promise<Array<{ baseUri: string; dbName: strin
   }
 }
 
-// build or return a one‐time cached summary
-export async function summaryOfResources(): Promise<string> {
+export async function listMCPResources(): Promise<Resource[]> {
   try {
     await ensureSubscription();
-    if (summaryCache) return summaryCache;
 
-    const summaryLines: string[] = [];
+    if (mcpResourcesCache) {
+      console.log('[listMCPResources] Returning cached MCP resources.');
+      return mcpResourcesCache;
+    }
 
-    let connections: Array<{ baseUri: string; dbName: string; schemas: string[] }> = [];
+    console.log('[listMCPResources] Fetching MCP resources from server...');
+    let mcpResources: Resource[] = [];
     try {
-      connections = await listConnections();
-      console.log('connections', connections);
+      const resp = await mcpClient.listResources();
+
+      if (!resp.resources || !Array.isArray(resp.resources)) {
+        throw new Error('Invalid [resources] response from MCP client.');
+      }
+
+      console.log('[listMCPResources] MCP resources:', resp.resources);
+
+      mcpResources = resp.resources;
+      console.log('[listMCPResources] Successfully fetched MCP resources:', mcpResources.length);
     } catch (err) {
-      console.error('[summaryOfResources] Error fetching connections:', err);
-      // TODO: Decide if we want to continue or throw here
-      connections = [];
+      console.error('[listMCPResources] Failed to fetch MCP resources:', err);
+      throw new Error('Failed to fetch MCP resources. Please try again later.');
     }
 
-    if (connections.length > 0) {
-      summaryLines.push('DATABASE CONNECTIONS:');
-      const connInfo = connections.map(c => `  - DB: ${c.dbName}\n  - Base URI: ${c.baseUri}\n  - Schemas: [${c.schemas.join(', ')}]`).join('\n');
-      summaryLines.push(connInfo);
-      summaryLines.push(''); // separator
-    }
-
-    // consolidate schemas from connections to avoid making a redundant API call.
-    const schemas = connections.flatMap(c => c.schemas);
-    schemasCache = schemas.length > 0 ? schemas : null;
-
-    summaryCache = summaryLines.join('\n');
-    return summaryCache;
+    mcpResourcesCache = mcpResources;
+    return mcpResources;
   } catch (err) {
-    console.error('[summaryOfResources] Unexpected error:', err);
-    // TODO: Decide if we want to throw or return a fallback string here.
-    return 'Error generating resource summary.';
+    console.error('[listMCPResources] Unexpected error during resource listing:', err);
+    // Return an empty array as a fallback
+    return [];
   }
 }
 
@@ -246,7 +269,7 @@ export async function summaryOfResources(): Promise<string> {
 // capabilities of your MCP server.
 export const resourceTools: Record<string, Tool> = {
   listSchemas: tool({
-    description: 'List available PostgreSQL schemas',
+    description: 'List available PostgreSQL schemas from a given database',
     parameters: z.object({}),
     execute: async (_args) => await listSchemas()
   }),
@@ -280,9 +303,20 @@ export const resourceTools: Record<string, Tool> = {
       return await summaryOfResources();
     }
   }),
+  listResources: tool({
+    description: 'List available resources from the MCP server',
+    parameters: z.object({}),
+    execute: async () => await listResources()
+  }),
   // listConnections: tool({
   //   description: 'List available database connections and their base URIs.',
   //   parameters: z.object({}),
   //   execute: async () => await listConnections()
   // })
 };
+
+
+async function listResources() {
+  const resp = await mcpClient.listResources();
+  return resp.resources;
+}

@@ -1,0 +1,61 @@
+/* AIDEV-NOTE: Registering '--total-num' and '--current-num' as integers allows them to be animated.
+   This is part of the CSS Houdini APIs and is currently supported in Chromium-based browsers.
+   See: https://css-tricks.com/animating-number-counters/ */
+@property --total-num {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+
+@property --current-num {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+
+.counterWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.usageSection {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.label {
+  font-weight: 500;
+}
+
+.counter {
+  font-weight: 700;
+  color: var(--color-text-primary);
+  min-width: 4ch;
+  text-align: right;
+}
+
+.currentCounter {
+  transition: --current-num 1s ease-out;
+  counter-reset: current var(--current-num);
+}
+
+.currentCounter::after {
+  content: counter(current);
+}
+
+.totalCounter {
+  transition: --total-num 1s ease-out;
+  counter-reset: total var(--total-num);
+}
+
+.totalCounter::after {
+  content: counter(total);
+}
+
+.separator {
+  color: var(--color-border);
+}

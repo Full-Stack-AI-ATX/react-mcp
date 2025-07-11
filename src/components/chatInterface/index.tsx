@@ -4,7 +4,10 @@ import type React                   from 'react';
 import type { Topic }               from '@Types/workspace';
 import type { Message }             from 'ai/react';
 
-import { useId, useRef, useEffect } from 'react';
+import {
+  useId, useRef,
+  useEffect, useState
+}                                   from 'react';
 import { Send, Bot, User, Trash2 }  from 'lucide-react';
 import { useChat }                  from '@ai-sdk/react';
 
@@ -15,6 +18,7 @@ import { Avatar, AvatarFallback }   from '@Components/ui/avatar';
 import Badge                        from '@Components/ui/badge';
 import AgentIntro                   from '@Components/agentIntro';
 import MarkdownRenderer             from '@Components/markdownRenderer';
+import UsageCounter                 from '@Components/usageCounter';
 
 import styles                       from './styles.module.css';
 
@@ -24,33 +28,71 @@ interface ChatInterfaceProps {
 }
 
 function ChatInterface({ activeTopic }: ChatInterfaceProps) {
-  const randomId  = useId();
-  const chatId    = activeTopic?.id ? `${activeTopic.id}-${randomId}` : `general-${randomId}`;
+  const randomId      = useId();
+  const chatId        = activeTopic?.id ? `${activeTopic.id}-${randomId}` : `general-${randomId}`;
+  const [isPriming, setIsPriming]     = useState(true);
+  const [totalUsage, setTotalUsage]     = useState(0);
+  const [currentUsage, setCurrentUsage] = useState(0);
+
+  useEffect(() => {
+    const primeChat = async () => {
+      try {
+        console.log('Priming chat with initial information...');
+        const response = await fetch('/api/chat/prime');
+
+        if (!response.ok) {
+          throw new Error(`Priming request failed with status ${response.status}`);
+        }
+
+        console.log('Priming successful');
+      } catch (error) {
+        console.error('Failed to prime chat:', error);
+      } finally {
+        setIsPriming(false);
+      }
+    };
+    primeChat();
+  }, []);
 
   const { messages, input, handleInputChange, handleSubmit, setMessages, append, data, setData, status } = useChat({
     id: chatId,
     api: '/api/chat',
-    initialInput: 'list schemas',
+    initialInput: 'what are the columns in the speaker table',
     maxSteps: 5,
-    onFinish: async (message, options) => {
+    onFinish: async (message, { usage }) => {
       console.log('useChat finished.', {
         message,
-        finishReason: options.finishReason,
-        usage: options.usage
+        usage
       });
+      // Usage object contains token counts for the last interaction.
+      // We are tracking the current call's usage and accumulating the total tokens used in this session.
+      setCurrentUsage(usage.totalTokens);
+      setTotalUsage(prevUsage => prevUsage + usage.totalTokens);
     },
     onError: (error) => {
       console.error('useChat error:', error);
     }
   });
 
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const formRef       = useRef<HTMLFormElement>(null);
-  const hasMessages   = messages.length > 0;
+  const chatStatus = isPriming ? 'priming' : status;
+
+  const getBadgeVariant = () => {
+    if (chatStatus === 'error') {
+      return 'destructive';
+    }
+    if (chatStatus === 'ready') {
+      return 'success';
+    }
+    return 'warning';
+  };
+
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const formRef     = useRef<HTMLFormElement>(null);
+  const hasMessages = messages.length > 0;
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+    if (viewportRef.current) {
+      viewportRef.current.scrollTop = viewportRef.current.scrollHeight;
     }
   }, [messages, data]);
 
@@ -107,8 +149,8 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
             <h2 className={styles['title']}>{activeTopic.name} Assistant</h2>
             <p className={styles['description']}>Specialized in {activeTopic.description.toLowerCase()}</p>
           </div>
-          <Badge variant="outline" className={styles['badge']}>
-            {status}
+          <Badge variant={getBadgeVariant()} className={styles['badge']}>
+            {chatStatus}
           </Badge>
         </>
       ) : (
@@ -120,11 +162,16 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
             <h2 className={styles['title']}>General Agent Assistant</h2>
             <p className={styles['description']}>Ask me anything about your infrastructure and operations</p>
           </div>
-          <Badge variant="outline" className={styles['badge']}>
-            {status}
+          <Badge variant={getBadgeVariant()} className={styles['badge']}>
+            {chatStatus}
           </Badge>
         </>
       )}
+      <UsageCounter
+        currentUsage={currentUsage}
+        totalUsage={totalUsage}
+        className={styles.usageCounter}
+      />
       <Button variant="ghost" size="icon" onClick={clearHistory} className={styles.clearButton}>
         <Trash2 size={16} />
       </Button>
@@ -159,7 +206,7 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
                 }
                 className={styles['input']}
               />
-              <Button type="submit" disabled={!input.trim() || status === 'submitted'}>
+              <Button type="submit" disabled={isPriming || !input.trim() || status === 'submitted'}>
                 <Send className={styles['sendIcon']} />
               </Button>
             </div>
@@ -177,7 +224,7 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
       </div>
 
       {/* Messages */}
-      <ScrollArea className={styles['scrollArea']} ref={scrollAreaRef}>
+      <ScrollArea className={styles['scrollArea']} viewportRef={viewportRef}>
         <div className={styles['messagesContainer']}>
           {messages.map(renderMessage)}
         </div>
@@ -200,7 +247,7 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
             placeholder={activeTopic ? `Ask about ${activeTopic.name.toLowerCase()}...` : 'Ask me anything about your infrastructure...'}
             className={styles['input']}
           />
-          <Button type="submit" disabled={!input.trim() || status === 'submitted'}>
+          <Button type="submit" disabled={isPriming || !input.trim() || status === 'submitted'}>
             <Send className={styles['sendIcon']} />
           </Button>
         </div>
