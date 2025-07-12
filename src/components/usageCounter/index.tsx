@@ -15,16 +15,12 @@ const UsageCounter: React.FC<UsageCounterProps> = ({ currentUsage, totalUsage, c
   const totalCounterRef   = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // AIDEV-NOTE: This effect updates the CSS custom property for the current usage.
-    // This triggers the animation for only the current usage counter.
     if (currentCounterRef.current) {
       currentCounterRef.current.style.setProperty('--current-num', String(currentUsage));
     }
   }, [currentUsage]);
 
   useEffect(() => {
-    // AIDEV-NOTE: This effect updates the CSS custom property for the total usage.
-    // This triggers the animation for only the total usage counter.
     if (totalCounterRef.current) {
       totalCounterRef.current.style.setProperty('--total-num', String(totalUsage));
     }

@@ -133,19 +133,33 @@
   width: var(--16px);
 }
 
+.messageWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.messageRowUser .messageWrapper {
+  align-items: flex-end;
+}
+
 .messageContent {
   max-width: 80%;
   border-radius: var(--8px);
-  padding: var(--12px);
 }
 
 .userMessage {
   background-color: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
+  padding: 0.75rem 1rem;
 }
 
 .assistantMessage {
   background-color: hsl(var(--muted));
+  border: 1px solid hsl(var(--border));
+  padding: 1rem;
+  width: 100%;
 }
 
 .messageText {
@@ -171,10 +185,22 @@
   margin-bottom: 0.5rem;
 }
 
+.messageHeader {
+  display: flex;
+  align-items: center;
+  column-gap: var(--4px);
+  margin-bottom: var(--8px);
+}
+
+.senderName {
+  font-weight: var(--semi-bold);
+  font-size: var(--14px);
+}
+
 .timestamp {
   font-size: var(--12px);
   opacity: 0.7;
-  margin-top: var(--4px);
+  margin-top: 0;
 }
 
 .inputContainer {
@@ -195,6 +221,175 @@
 .sendIcon {
   height: var(--16px);
   width: var(--16px);
+}
+
+.advancedRendererContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.textContent {
+  color: hsl(var(--foreground));
+  font-size: var(--14px);
+  word-wrap: break-word;
+  line-height: 1.5;
+}
+
+.textContent > *:first-child {
+  margin-top: 0;
+}
+
+.textContent > *:last-child {
+  margin-bottom: 0;
+}
+
+.codeCard {
+  border-left: 4px solid hsl(var(--primary));
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.codeCard > div {
+  padding: 0;
+}
+
+.codeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid hsl(var(--border));
+  background-color: hsl(var(--muted) / 0.5);
+}
+
+.codeHeaderLeft,
+.codeHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sqlIcon {
+  height: 1rem;
+  width: 1rem;
+  color: hsl(var(--primary));
+}
+
+.sqlTitle {
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+}
+
+.sqlBadge {
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.runButton {
+  color: hsl(var(--success));
+  padding: 0 0.75rem;
+  height: 2rem;
+}
+
+.runButton:hover {
+  background-color: hsl(var(--success) / 0.1);
+}
+
+.runIcon {
+  height: 0.75rem;
+  width: 0.75rem;
+  margin-right: 0.25rem;
+}
+
+.copyButton {
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+}
+
+.copyIcon,
+.copyIconSuccess {
+  height: 1rem;
+  width: 1rem;
+}
+
+.copyIconSuccess {
+  color: hsl(var(--success));
+}
+
+.codeBlockWrapper {
+  position: relative;
+}
+
+.codeBlock {
+  background-color: #020617;
+  color: #f8fafc;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.625;
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+}
+
+.codeBlock code {
+  font-family: var(--font-mono);
+}
+
+.textH2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: hsl(var(--foreground));
+}
+
+.textH3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: hsl(var(--foreground));
+}
+
+.textP {
+  margin-bottom: 1rem;
+}
+
+.textUl {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.textLi {
+  margin-bottom: 0.25rem;
+}
+
+.textStrong {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.textCode {
+  background-color: hsl(var(--muted));
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-family: var(--font-mono);
+}
+
+.textKeyValuePair {
+  margin-bottom: 0.5rem;
+}
+
+.textKey {
+  font-weight: 600;
+  color: hsl(var(--primary));
+}
+
+.textValue {
+  color: hsl(var(--muted-foreground));
 }
 
 /* styles for the initial centered layout of the chat interface */
@@ -222,11 +417,48 @@
 }
 
 .centeredContent {
-  flex-grow: 1;
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  gap: 1rem;
+}
+
+.tableContainer {
+  overflow-x: auto;
+  margin-block: 1rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+}
+
+.table {
   width: 100%;
-  margin: 0 auto;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  caption-side: bottom;
+  border-radius: var(--radius);
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.table th {
+  font-weight: 600;
+}
+
+.table > tbody > tr:last-child > td {
+    border-bottom: none;
+}
+
+.table > tbody > tr:nth-child(even) {
+  background-color: hsl(var(--muted) / 0.5);
+}
+
+.table > tbody > tr:hover {
+  background-color: hsl(var(--muted));
 }

@@ -1,6 +1,8 @@
-/* AIDEV-NOTE: Registering '--total-num' and '--current-num' as integers allows them to be animated.
+/* Registering '--total-num' and '--current-num' as integers allows them to be animated.
    This is part of the CSS Houdini APIs and is currently supported in Chromium-based browsers.
-   See: https://css-tricks.com/animating-number-counters/ */
+   See: https://css-tricks.com/animating-number-counters/
+   For more information, see: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Variables/Using_CSS_variables
+*/
 @property --total-num {
   syntax: '<integer>';
   initial-value: 0;

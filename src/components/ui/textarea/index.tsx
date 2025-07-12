@@ -9,7 +9,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, React.ComponentProps<'textarea'
   ({ className, ...props }, ref) => {
     const internalRef = useRef<HTMLTextAreaElement | null>(null);
 
-    // AIDEV-NOTE: This combines the forwarded ref with our internal ref.
+    // This combines the forwarded ref with our internal ref.
     // This allows us to both control the component from outside and have our own internal logic.
     useImperativeHandle(ref, () => internalRef.current as HTMLTextAreaElement);
 

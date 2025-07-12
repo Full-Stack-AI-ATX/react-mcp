@@ -70,6 +70,7 @@
 .mainContent {
   flex: 1 1 0%;
   display: flex;
+  overflow: hidden; /* Prevent this container from scrolling */
 }
 
 .workspaceWrapper {
@@ -78,6 +79,7 @@
   margin-inline: auto;
   display: flex;
   flex: 1;
+  overflow: hidden; /* Prevent this container from scrolling */
 }
 
 .sidebar {
@@ -86,7 +88,7 @@
   padding: 1rem;
   overflow-y: auto;
   flex-direction: column;
-  flex: 1 1 0%;
+  flex-shrink: 0; /* Prevent sidebars from shrinking */
 }
 
 .leftSidebar {
@@ -119,6 +121,7 @@
   flex-direction: column;
   flex: 1 1 0%;
   min-width: 750px;
+  height: 100%; /* Ensure chat container takes full height */
 }
 
 .chatContainerCollapsed {

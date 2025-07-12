@@ -17,7 +17,7 @@ import ScrollArea                   from '@Components/ui/scrollArea';
 import { Avatar, AvatarFallback }   from '@Components/ui/avatar';
 import Badge                        from '@Components/ui/badge';
 import AgentIntro                   from '@Components/agentIntro';
-import MarkdownRenderer             from '@Components/markdownRenderer';
+import AdvancedMessageRenderer      from './AdvancedMessageRenderer';
 import UsageCounter                 from '@Components/usageCounter';
 
 import styles                       from './styles.module.css';
@@ -57,7 +57,7 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
   const { messages, input, handleInputChange, handleSubmit, setMessages, append, data, setData, status } = useChat({
     id: chatId,
     api: '/api/chat',
-    initialInput: 'what are the columns in the speaker table',
+    initialInput: 'generate a query that returns the speaker first name and their associated presentations',
     maxSteps: 5,
     onFinish: async (message, { usage }) => {
       console.log('useChat finished.', {
@@ -89,15 +89,35 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const formRef     = useRef<HTMLFormElement>(null);
   const hasMessages = messages.length > 0;
+  const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
 
   useEffect(() => {
-    if (viewportRef.current) {
-      viewportRef.current.scrollTop = viewportRef.current.scrollHeight;
-    }
-  }, [messages, data]);
+    const viewport = viewportRef.current;
+    if (!viewport) return;
 
-  const clearHistory = () => {
-    setMessages([]);
+    const handleScroll = () => {
+      const isAtBottom = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight < 1;
+      setAutoScrollEnabled(isAtBottom);
+    };
+
+    if (autoScrollEnabled) {
+      viewport.scrollTop = viewport.scrollHeight;
+    }
+
+    viewport.addEventListener('scroll', handleScroll);
+    return () => viewport.removeEventListener('scroll', handleScroll);
+  }, [messages, data, autoScrollEnabled]);
+
+  const clearHistory = () => setMessages([]);
+
+  const handleExecuteQuery = async (sql: string) => {
+    await append({
+      role: 'user',
+      content: `Run this query\n${sql}`,
+      data: {
+        hidden: true,
+      },
+    });
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -109,34 +129,53 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
     }
   };
 
-  const renderMessage = (message: Message) => (
-    <div
-      key={message.id}
-      className={`${styles.messageRow} ${
-        message.role === 'user' ? styles.messageRowUser : ''
-      }`}
-    >
-      <Avatar className={styles.avatar}>
-        <AvatarFallback>
-          {message.role === 'user' ? <User className={styles.avatarIcon} /> : <Bot className={styles.avatarIcon} />}
-        </AvatarFallback>
-      </Avatar>
+  const renderMessage = (message: Message) => {
+    const senderName = message.role === 'user'
+      ? 'You'
+      : (activeTopic?.name
+        ? `${activeTopic.name} Assistant`
+        : 'General Agent Assistant');
+
+    return (
       <div
-        className={`${styles.messageContent} ${
-          message.role === 'user' ? styles.userMessage : styles.assistantMessage
+        key={message.id}
+        className={`${styles.messageRow} ${
+          message.role === 'user' ? styles.messageRowUser : ''
         }`}
       >
-        <div className={styles.messageText}>
-          <MarkdownRenderer content={message.content} />
+        <Avatar className={styles.avatar}>
+          <AvatarFallback>
+            {message.role === 'user' ? <User className={styles.avatarIcon} /> : <Bot className={styles.avatarIcon} />}
+          </AvatarFallback>
+        </Avatar>
+        <div className={styles.messageWrapper}>
+          <div className={styles.messageHeader}>
+            <span className={styles.senderName}>{senderName}</span>
+            {message.createdAt && (
+              <span className={styles.timestamp}>
+                {' • '}
+                {message.createdAt.toLocaleTimeString()}
+              </span>
+            )}
+          </div>
+          <div
+            className={`${styles.messageContent} ${
+              message.role === 'user' ? styles.userMessage : styles.assistantMessage
+            }`}
+          >
+            {message.role === 'user' ? (
+              <p className={styles.messageText}>{message.content}</p>
+            ) : (
+              <AdvancedMessageRenderer
+                content={message.content}
+                onExecuteQuery={handleExecuteQuery}
+              />
+            )}
+          </div>
         </div>
-        {message.createdAt && (
-          <p className={styles.timestamp}>
-            {message.createdAt.toLocaleTimeString()}
-          </p>
-        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   const headerContent = (
     <>
@@ -226,7 +265,7 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
       {/* Messages */}
       <ScrollArea className={styles['scrollArea']} viewportRef={viewportRef}>
         <div className={styles['messagesContainer']}>
-          {messages.map(renderMessage)}
+          {messages.filter(m => !(m as any).data?.hidden).map(renderMessage)}
         </div>
       </ScrollArea>
 

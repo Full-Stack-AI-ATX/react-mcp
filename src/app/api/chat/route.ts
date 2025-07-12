@@ -2,31 +2,35 @@ import type {
   CoreMessage,
   ToolCallPart,
   ToolResultPart
-}                             from 'ai';
+}                         from 'ai';
 
-import { streamText }         from 'ai';
-import { openai }             from '@ai-sdk/openai';
+import { streamText }     from 'ai';
+import { openai }         from '@ai-sdk/openai';
 
-import { getMCPTools }        from '@Lib/mcp/streamTextToolCache';
-import {
-  resourceTools,
-  summaryOfResources
-}                             from '@Lib/mcp/streamTextResourceTools';
-import { SYSTEM_PROMPT }      from '@Lib/prompts/systemPrompt';
+import listTools          from '@Lib/mcp/tools';
+import * as resourceTools from '@Lib/mcp/resources';
+import getDbInfo          from '@Lib/llm/dbInfo';
+import { SYSTEM_PROMPT }  from '@Lib/prompts/systemPrompt';
 
 
 async function POST(req: Request) {
   console.log('Received POST request to /api/chat');
   const { messages }: { messages: CoreMessage[] } = await req.json();
-  console.log('Request body parsed:', { messages });
+  // console.log('Request body parsed:', { messages });
 
   console.log('Fetching tools and summary...');
-  const [tools, resSummary] = await Promise.all([
-    getMCPTools(),
-    summaryOfResources()
-  ]);
+  const mcpTools      = await listTools();
+  const dbInfoContext = await getDbInfo();
 
-  const allTools = { ...tools, ...resourceTools };
+  if (!dbInfoContext) {
+    console.error('No dbInfo found in cache. Check why the fetching/cache failed.');
+    return new Response(JSON.stringify({ error: 'Cannot proceed without database context.' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  const allTools = { ...mcpTools, ...resourceTools };
 
   // tool details for logging
   // const toolDetailsForLogging = Object.fromEntries(
@@ -41,8 +45,7 @@ async function POST(req: Request) {
   // );
 
   // build a minimal, dynamic system prompt
-  const systemContext = `${SYSTEM_PROMPT}\n\n${resSummary}`;
-  // console.log('System context:', systemContext);
+  const systemContext = `${SYSTEM_PROMPT}\n${dbInfoContext}`;
 
   console.log('Calling streamText...');
   try {

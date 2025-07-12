@@ -5,8 +5,7 @@ import ReactMarkdown  from 'react-markdown';
 import remarkGfm      from 'remark-gfm';
 
 import CodeBlock      from '@Components/codeBlock';
-
-import styles from './styles.module.css';
+import styles         from './styles.module.css';
 
 
 interface MarkdownRendererProps {
@@ -23,11 +22,21 @@ const MarkdownRenderer = ({ content }: MarkdownRendererProps) => {
         ul: ({ node, ...props }) => <ul className={styles.list} {...props} />,
         ol: ({ node, ...props }) => <ol className={styles.list} {...props} />,
         li: ({ node, ...props }) => <li className={styles.listItem} {...props} />,
+        p: ({ node, children }) => {
+          const hasCodeChild = node?.children.some(
+            (child) => child.type === 'element' && child.tagName === 'code'
+          );
+
+          if (hasCodeChild) {
+            return <div className={styles.paragraph}>{children}</div>;
+          }
+          return <p className={styles.paragraph}>{children}</p>;
+        },
         code(props: any) {
           const { node, inline, className, children, ...rest } = props;
 
           if (inline) {
-            return <code className={className} {...rest}>{children}</code>;
+            return <code className={styles.inlineCode} {...rest}>{children}</code>;
           }
 
           const match = /language-(\w+)/.exec(className || '');

@@ -22,3 +22,11 @@
 .list > .listItem::marker {
   color: hsl(var(--muted-foreground));
 }
+
+.inlineCode {
+  font-family: var(--font-mono);
+  background-color: hsl(var(--muted));
+  padding: 0.1rem 0.3rem;
+  border-radius: var(--4px);
+  font-size: 0.875rem;
+}

@@ -43,8 +43,8 @@ import readResource   from './readResource';
 
 export {
   listResources,
-  readSchemas,
-  readTables,
-  readTableInfo,
+  // readSchemas,
+  // readTables,
+  // readTableInfo,
   readResource
 }

@@ -2,7 +2,6 @@ import type { Topic } from '@Types/workspace';
 
 
 export const topics: Topic[] = [
-  // AIDEV-NOTE: The first three topics are related to infrastructure.
   {
     id: 'cloud-management',
     name: 'Cloud Management',
@@ -45,7 +44,6 @@ export const topics: Topic[] = [
       latency: '12ms'
     }
   },
-  // AIDEV-NOTE: The last three topics are related to operations.
   {
     id: 'observability',
     name: 'Observability',

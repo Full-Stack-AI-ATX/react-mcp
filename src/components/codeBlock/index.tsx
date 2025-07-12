@@ -2,10 +2,17 @@
 
 import 'highlight.js/styles/github-dark.css';
 
-import { useState }     from 'react';
-import { Copy, Check }  from 'lucide-react';
-import hljs             from 'highlight.js';
-import styles           from './styles.module.css';
+import { useState } from 'react';
+import {
+  Copy,
+  Check,
+  Database,
+  Play,
+}                   from 'lucide-react';
+import hljs         from 'highlight.js';
+
+import Badge        from '@Components/ui/badge';
+import styles       from './styles.module.css';
 
 
 interface CodeBlockProps {
@@ -19,7 +26,7 @@ const CodeBlock = ({ language, value }: CodeBlockProps) => {
   const handleCopy = () => {
     navigator.clipboard.writeText(value);
     setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 5000);
+    setTimeout(() => setIsCopied(false), 2000);
   };
 
   const getHighlightedCode = () => {
@@ -34,20 +41,38 @@ const CodeBlock = ({ language, value }: CodeBlockProps) => {
   };
 
   return (
-    <div className={styles['container']}>
-      <div className={styles['header']}>
-        <span className={styles['language']}>{language || 'plaintext'}</span>
-        <button
-          onClick={handleCopy}
-          className={styles['copyButton']}
-        >
-          {isCopied
-            ? (<><Check size={16} /> Copied!</>)
-            : (<><Copy size={16} /> Copy code</>)
-          }
-        </button>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <div className={styles.title}>
+          {language === 'sql' && <Database size={16} />}
+          <span>{language === 'sql' ? 'SQL Query' : 'Code'}</span>
+          <Badge variant="secondary" className={styles.languageBadge}>
+            {language || 'plaintext'}
+          </Badge>
+        </div>
+        <div className={styles.actions}>
+          {language === 'sql' && (
+            <button className={styles.runButton}>
+              <Play size={16} />
+              <span>Run</span>
+            </button>
+          )}
+          <button onClick={handleCopy} className={styles.copyButton}>
+            {isCopied ? (
+              <>
+                <Check size={16} />
+                <span>Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy size={16} />
+                <span>Copy</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
-      <pre className={styles['pre']}>
+      <pre className={styles.pre}>
         <code
           className={`hljs language-${language || 'plaintext'}`}
           dangerouslySetInnerHTML={{ __html: getHighlightedCode() }}
