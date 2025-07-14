@@ -1,0 +1,38 @@
+{
+  "name": "mcp-server-postgres",
+  "version": "0.1.0",
+  "description": "MCP server + PostgreSQL",
+  "license": "MIT",
+  "homepage": "https://github.com/Full-Stack-AI-ATX/react-mcp",
+  "bugs": "https://github.com/Full-Stack-AI-ATX/react-mcp/issues",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@fastify/cors": "11.0.1",
+    "@modelcontextprotocol/sdk": "1.15.1",
+    "@pgsql/traverse": "17.1.0",
+    "@pgsql/types": "17.6.1",
+    "ajv": "8.17.1",
+    "dotenv": "17.2.0",
+    "fastify": "5.4.0",
+    "pgsql-deparser": "17.9.0",
+    "pgsql-parser": "17.7.8",
+    "postgres": "3.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "24.0.13",
+    "del-cli": "6.0.0",
+    "dotenv-cli": "8.0.0",
+    "shx": "0.4.0",
+    "tsc-alias": "1.8.16",
+    "typescript": "5.8.3"
+  },
+  "scripts": {
+    "build": "del -f dist && tsc && tsc-alias && shx chmod +x dist/index.js",
+    "watch": "tsc --watch",
+    "repack": "del -f node_modules package-lock.json pnpm-lock.yaml && pnpm install",
+    "start": "dotenv -e .env.local -- node dist/index.js"
+  }
+}

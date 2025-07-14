@@ -12,6 +12,10 @@
   justify-content: flex-start;
 }
 
+.viewport > div {
+  display: block !important;
+}
+
 .scrollbar {
   display: flex;
   touch-action: none;

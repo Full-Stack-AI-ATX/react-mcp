@@ -163,8 +163,8 @@ Temporary Items
 *.sketch
 
 # git comments & notes
-z*.*
-z*
+z*.*.md
+z*.md
 
 # cursor
 .cursorrules

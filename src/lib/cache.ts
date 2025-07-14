@@ -2,7 +2,6 @@
  * A simple, in-memory cache.
  *
  * This is a singleton, so it can be used across the app.
- *
  * USAGE: cache.get('key'), cache.set('key', value), cache.has('key'), cache.remove('key')
  */
 const cache = new Map<string, any>();

@@ -59,7 +59,7 @@ TOOL USAGE:
 - To answer a user's question, you MUST find the most relevant resource from the list returned by 'listResources'. Use the 'name' and 'description' fields to find the best match for the user's query.
 - Once you have found the correct resource, call 'readResource' using the exact \`uri\` from that resource object.
 - DO NOT invent, construct, or modify URIs. You must use the exact \`uri\` provided in the list of resources.
-- For example, if the user asks "what can you tell me about the my_schema schema?", you should first call 'listResources'. Then, in the results, you would look for a resource related to the 'my_schema' schema. You might find a resource with a \`name\` like "'my_schema' schema information" and a \`uri\` like "postgres://postgres_user@my_database/schemas/my_schema". You would then call 'readResource' with that exact URI.
+- For example, if the user asks "what can you tell me about the my_schema schema?", you should first call 'listResources'. Then, in the results, you would look for a resource related to the 'my_schema' schema. You might find a resource with a \`name\` like "'my_schema' schema information" and a \`uri\` like "postgresql://postgres_user@my_database/schemas/my_schema". You would then call 'readResource' with that exact URI.
 
 - When a user asks for information about a table (e.g., 'tell me about the 'my_table' table') and does not specify a schema:
   - You MUST NOT assume a schema.
