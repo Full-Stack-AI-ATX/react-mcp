@@ -52,7 +52,7 @@ The MCP server is responsible for connecting to and communicating with your Post
     ```bash
     pnpm start
     ```
-    The server should now be running and connected to your database. Keep this terminal open.
+    By default, the server is running on port 3001 and is connected to your database. Keep this terminal open.
 
 ---
 
@@ -65,12 +65,23 @@ Once the MCP server is running, you can start the Next.js application.
     cd ../..
     ```
 
-2.  **Install dependencies:**
+2.  **Create environment file:**
+    The Next.js application requires an API key for OpenAI and the URL for the MCP server. Create a file named `.env.local` in the project's root directory and add the following environment variables:
+
+    **`.env.local`**
+    ```
+    OPENAI_API_KEY=your_openai_api_key
+    MCP_SERVER_URL=http://localhost:3001
+    ```
+    - Replace `your_openai_api_key` with your actual OpenAI API key.
+    - The `MCP_SERVER_URL` should point to the running MCP server instance. The default is `http://localhost:3001`, but you can change it if your server runs on a different port.
+
+3.  **Install dependencies:**
     ```bash
     pnpm install
     ```
 
-3.  **Start the development server:**
+4.  **Start the development server:**
     ```bash
     pnpm start
     ```
