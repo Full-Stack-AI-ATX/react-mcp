@@ -57,11 +57,22 @@ async function queryToolHandler(args: QueryToolArgs): Promise<CallToolResult> {
       throw new Error('Only SELECT statements are allowed.');
     }
 
-    // 3. Walk the AST to ensure no nested statements can modify data.
+    // 3. Walk the AST to ensure no nested statements can modify data or access forbidden resources.
     let isMutation = false;
+    let accessesForbiddenResource = false;
     const forbiddenNodes = [
       'InsertStmt', 'UpdateStmt', 'DeleteStmt', 'CopyStmt', 'CreateStmt',
       'DropStmt', 'AlterTableStmt', 'TruncateStmt', 'GrantStmt', 'LockStmt'
+    ];
+    // Deny access to system catalogs to prevent info disclosure.
+    // information_schema is commented out as it may be needed for legitimate
+    // metadata queries, but it can also be a source of leaks.
+    const forbiddenSchemas = ['pg_catalog' /*, 'information_schema'*/];
+
+    // Deny functions that could interact with the filesystem or network.
+    const forbiddenFunctions = [
+      'pg_read_file', 'pg_read_binary_file', 'pg_ls_dir',
+      'dblink_connect', 'dblink'
     ];
 
     walk(nonEmptyStatements, (path: NodePath) => {
@@ -69,10 +80,33 @@ async function queryToolHandler(args: QueryToolArgs): Promise<CallToolResult> {
         isMutation = true;
         return false;
       }
+
+      // Check for access to forbidden schemas in table references
+      if (path.node?.RangeVar?.schemaname && forbiddenSchemas.includes(path.node.RangeVar.schemaname)) {
+        console.warn(`[HANDLER - query] Denied access to forbidden schema: ${path.node.RangeVar.schemaname}`);
+        accessesForbiddenResource = true;
+        return false;
+      }
+
+      // Check for use of forbidden functions
+      if (path.node?.FuncCall?.funcname) {
+        const funcNameParts = path.node.FuncCall.funcname.map((p: any) => p.String?.str).filter(Boolean);
+        const funcName = funcNameParts.pop(); // Get the base name of the function
+
+        if (funcName && forbiddenFunctions.includes(funcName)) {
+          console.warn(`[HANDLER - query] Denied use of forbidden function: ${funcName}`);
+          accessesForbiddenResource = true;
+          return false;
+        }
+      }
     });
 
     if (isMutation) {
       throw new Error('Data-modifying statements are not allowed.');
+    }
+
+    if (accessesForbiddenResource) {
+      throw new Error('Access to security-sensitive schemas or functions is not allowed.');
     }
 
     // 4. Enforce a LIMIT on the query to prevent excessive results.

@@ -13,17 +13,16 @@ import {
 } from './index.js';
 
 
+const ajv = new (Ajv as any).default({
+  allErrors: true
+});
+
+const compiledSchemas = Object.entries(promptSchemas).reduce((acc, [name, schema]) => {
+  acc[name] = ajv.compile(schema);
+  return acc;
+}, {} as Record<string, Ajv.ValidateFunction<any>>);
+
 function registerPromptHandlers(mcpServer: Server) {
-  const ajv = new (Ajv as any).default({
-    allErrors: true
-  });
-
-  const compiledSchemas = Object.entries(promptSchemas).reduce((acc, [name, schema]) => {
-    acc[name] = ajv.compile(schema);
-    return acc;
-  }, {} as Record<string, Ajv.ValidateFunction<any>>);
-
-
   mcpServer.setRequestHandler(ListPromptsRequestSchema, async () => {
     console.log('[HANDLER - prompts/list] START');
     try {

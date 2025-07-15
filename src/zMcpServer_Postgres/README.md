@@ -116,8 +116,10 @@ The `query` tool allows for the execution of safe, read-only SQL queries. It has
 1.  **SQL Parsing**: It parses the incoming SQL string to create an Abstract Syntax Tree (AST).
 2.  **Statement Validation**: It ensures that only a single `SELECT` statement is provided.
 3.  **Mutation Prevention**: It walks the AST to guarantee that no data-modifying operations (like `INSERT`, `UPDATE`, `DROP`, etc.) are present.
-4.  **Limit Enforcement**: It automatically adds a `LIMIT` to queries that don't have one and caps the maximum number of rows that can be returned.
-5.  **Read-Only Transaction**: The final, sanitized query is executed within a `READ ONLY` PostgreSQL transaction.
+4.  **System Catalog Prevention**: It blocks queries that attempt to access sensitive database schemas like `pg_catalog` to prevent information disclosure about the database's internal state.
+5.  **Dangerous Function Prevention**: It blocks the use of functions that could interact with the server's filesystem or network, such as `pg_read_file` or `dblink_connect`.
+6.  **Limit Enforcement**: It automatically adds a `LIMIT` to queries that don't have one and caps the maximum number of rows that can be returned.
+7.  **Read-Only Transaction**: The final, sanitized query is executed within a `READ ONLY` PostgreSQL transaction for an additional layer of safety.
 
 ## Error Handling
 
