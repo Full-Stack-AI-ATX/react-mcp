@@ -13,14 +13,10 @@ import Button                   from '@Components/ui/button';
 import { topics }               from '../data/topics';
 import { sampleConversations }  from '../data/sample-conversations';
 
-import styles from './styles.module.css';
+import styles                   from './styles.module.css';
 
 
 function Page() {
-  return <AIWorkspaceDashboard />
-}
-
-function AIWorkspaceDashboard() {
   const [activeTopic, setActiveTopic] = useState<Topic | null>(null)
   const [messages, setMessages] = useState<Message[]>(Object.values(sampleConversations).flat())
   const [sidebarVisible, setSidebarVisible] = useState(false)
@@ -116,7 +112,7 @@ function AIWorkspaceDashboard() {
         <div className={styles.headerContent}>
           <div>
             <h1 className={styles.title}>Agentic Workspace</h1>
-            <p className={styles.subtitle}>Your intelligent infrastructure command center</p>
+            <p className={styles.subtitle}>Your intelligent command center</p>
           </div>
           <div className={styles.headerRight}>
             <ThemeToggle />
@@ -161,7 +157,7 @@ function AIWorkspaceDashboard() {
 
           {/* Chat Interface - Middle */}
           <div className={`${styles.chatContainer} ${!sidebarVisible ? styles.chatContainerCollapsed : ""}`}>
-            <ChatInterface activeTopic={activeTopic} messages={messages} onSendMessage={handleSendMessage} />
+            <ChatInterface activeTopic={activeTopic} />
           </div>
 
           {/* Right Topics Column */}

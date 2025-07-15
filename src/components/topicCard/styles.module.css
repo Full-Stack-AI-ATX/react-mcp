@@ -1,13 +1,3 @@
-:global([data-theme="light"]) .card,
-:global([data-theme="dark"]) .card {
-  --topic-color-blue:   #3B82F6;
-  --topic-color-green:  #22C55E;
-  --topic-color-purple: #A855F7;
-  --topic-color-red:    #EF4444;
-  --topic-color-orange: #F97316;
-  --topic-color-cyan:   #06B6D4;
-}
-
 .card {
   cursor: pointer;
   transition: all 0.2s;

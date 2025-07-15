@@ -11,6 +11,14 @@
   --gray-rgb: 255, 255, 255;
   --gray-alpha-200: rgba(var(--gray-rgb), 0.145);
   --gray-alpha-100: rgba(var(--gray-rgb), 0.06);
+
+  /* Topic Colors */
+  --topic-color-blue:   #3B82F6;
+  --topic-color-green:  #22C55E;
+  --topic-color-purple: #A855F7;
+  --topic-color-red:    #EF4444;
+  --topic-color-orange: #F97316;
+  --topic-color-cyan:   #06B6D4;
 }
 
 /* Light theme if the user prefers it */

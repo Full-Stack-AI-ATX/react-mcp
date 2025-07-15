@@ -24,15 +24,17 @@ import styles                       from './styles.module.css';
 
 
 interface ChatInterfaceProps {
-  activeTopic: Topic
+  activeTopic: Topic | null;
 }
 
 function ChatInterface({ activeTopic }: ChatInterfaceProps) {
-  const randomId      = useId();
-  const chatId        = activeTopic?.id ? `${activeTopic.id}-${randomId}` : `general-${randomId}`;
-  const [isPriming, setIsPriming]     = useState(true);
+  const randomId                        = useId();
+  const chatId                          = activeTopic?.id ? `${activeTopic.id}-${randomId}` : `general-${randomId}`;
+  const [isPriming, setIsPriming]       = useState(true);
   const [totalUsage, setTotalUsage]     = useState(0);
   const [currentUsage, setCurrentUsage] = useState(0);
+  const viewportRef                     = useRef<HTMLDivElement>(null);
+  const formRef                         = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     const primeChat = async () => {
@@ -86,8 +88,6 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
     return 'warning';
   };
 
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const formRef     = useRef<HTMLFormElement>(null);
   const hasMessages = messages.length > 0;
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
 
