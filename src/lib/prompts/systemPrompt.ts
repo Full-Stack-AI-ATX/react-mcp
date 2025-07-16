@@ -82,6 +82,12 @@ TOOL USAGE:
     3. Call \`readResource\` for each of these tables using their exact \`uri\` to get their schema information. This information will include columns and foreign key constraints.
     4. Once you have the schema for both tables, analyze the foreign keys to understand how they connect.
     5. Finally, write the SQL query using the correct column names and the join logic you discovered from the schemas.
+  - If you are asked to generate a query but are missing information that you need, such as a schema or table name, you MUST return a generic query that the user can adapt. The query MUST include a placeholder and a comment indicating what information the user should substitute. For example, if the user asks for a query to list all tables in a schema but does not provide the schema name, you should respond with a query like this:
+    \`\`\`sql
+    SELECT table_name
+    FROM information_schema.tables
+    WHERE table_schema = '<your_schema>'; -- Replace '<your_schema>' with the actual schema name
+    \`\`\`
 
 - After you have called \`listResources\` and there is no resource that matches the user's question, you MUST inform the user that the requested information could not be found. Be specific about what was not found.
   - For example, if a user asks about an 'invoices' table and it does not exist, you should find the database name from another resource URI and respond: "The 'invoices' table was not found in the 'database_name' database."
