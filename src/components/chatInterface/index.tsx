@@ -59,7 +59,7 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
   const { messages, input, handleInputChange, handleSubmit, setMessages, append, data, setData, status } = useChat({
     id: chatId,
     api: '/api/chat',
-    initialInput: 'generate a query that returns the speaker first name and their associated presentations',
+    initialInput: 'what database are you connected to?',
     maxSteps: 5,
     onFinish: async (message, { usage }) => {
       console.log('useChat finished.', {
