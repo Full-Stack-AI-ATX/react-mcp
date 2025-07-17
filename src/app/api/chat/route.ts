@@ -62,7 +62,12 @@ async function POST(req: Request) {
           console.log('Tool calls:', result.toolCalls.map((tc: ToolCallPart) => ({ toolCallId: tc.toolCallId, toolName: tc.toolName, args: tc.args })));
         }
         if (result.toolResults && result.toolResults.length > 0) {
-          console.log('Tool results:', result.toolResults.map((tr: ToolResultPart) => ({ toolCallId: tr.toolCallId, toolName: tr.toolName, result: tr.result })));
+          const firstTwoResults = result.toolResults.slice(0, 2).map((tr: ToolResultPart) => ({
+            toolCallId: tr.toolCallId,
+            toolName: tr.toolName,
+            result: tr.result
+          }));
+          console.log('Tool results (first two):', firstTwoResults);
         }
       },
       onFinish: async (result) => {

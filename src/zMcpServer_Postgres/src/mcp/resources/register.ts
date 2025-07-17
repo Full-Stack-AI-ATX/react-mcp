@@ -56,19 +56,19 @@ function registerResourceHandlers(mcpServer: Server) {
 
       const dynamicResources = Object.keys(dbSchemaMap).map(schemaName => {
         const resources: Resource[] = [];
+        const schemaDetails = dbSchemaMap[schemaName];
 
         const schemaResource: Resource = {
           uri: `${baseUri}/schemas/${schemaName}`,
           name: `'${schemaName}' schema information`,
           title: `Information about the schema '${schemaName}'`,
-          description: 'This resource contains information about the particular schema in the connected database.',
+          description: schemaDetails.description || `This resource provides details about the '${schemaName}' schema.`,
           mimeType: 'application/json'
         };
         resources.push(schemaResource);
 
         // Only add table resources if the schema has tables.
-        const schemaDetails = dbSchemaMap[schemaName];
-        if (schemaDetails && schemaDetails.tableList.length > 0) {
+        if (schemaDetails && schemaDetails.tables.length > 0) {
           const tablesListResource: Resource = {
             uri: `${baseUri}/schemas/${schemaName}/tables`,
             name: `'${schemaName}' table list`,
@@ -78,13 +78,16 @@ function registerResourceHandlers(mcpServer: Server) {
           };
           resources.push(tablesListResource);
 
-          const tableDetailResources: Resource[] = schemaDetails.tableList.map((tableName: string) => ({
-            uri: `${baseUri}/schemas/${schemaName}/tables/${tableName}`,
-            name: `'${schemaName}.${tableName}' table information`,
-            title: `Information about the table '${schemaName}.${tableName}'`,
-            description: `This resource contains information about the particular table in a particular schema in the connected database. It provides information about the table such as the columns, constraints, foreign keys, and indexes.`,
-            mimeType: 'application/json'
-          }));
+          const tableDetailResources: Resource[] = schemaDetails.tables.map((table: { name: string; description: string }) => {
+            return {
+              uri: `${baseUri}/schemas/${schemaName}/tables/${table.name}`,
+              name: `'${schemaName}.${table.name}' table information`,
+              title: `Information about the table '${schemaName}.${table.name}'`,
+              description: table.description || `This resource provides details about the '${table.name}' table in the '${schemaName}' schema.`,
+              mimeType: 'application/json'
+            };
+          });
+
           resources.push(...tableDetailResources);
         }
 

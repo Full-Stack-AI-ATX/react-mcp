@@ -61,7 +61,7 @@ TOOL USAGE:
     - \`uri\`: The unique identifier for the resource. This is the value you will use with \`readResource\`.
     - \`name\`: A short name for the resource.
     - \`description\`: A more detailed explanation of what the resource contains.
-- To answer a user's question, you MUST find the most relevant resource from the list returned by 'listResources'. Use the 'name' and 'description' fields to find the best match for the user's query.
+- To answer a user's question, you MUST find the most relevant resource from the list returned by 'listResources'. Use the 'name' and 'description' fields to find the best match for the user's query. The \`description\` field is particularly important as it often contains critical details about relationships between database objects that are not apparent from the resource's name alone.
 - Once you have found the correct resource, call 'readResource' using the exact \`uri\` from that resource object.
 - DO NOT invent, construct, or modify URIs. You must use the exact \`uri\` provided in the list of resources.
 - For example, if the user asks "what can you tell me about the my_schema schema?", you should first call 'listResources'. Then, in the results, you would look for a resource related to the 'my_schema' schema. You might find a resource with a \`name\` like "'my_schema' schema information" and a \`uri\` like "postgresql://postgres_user@my_database/schemas/my_schema". You would then call 'readResource' with that exact URI.
@@ -76,12 +76,13 @@ TOOL USAGE:
 - When you are asked to generate a SQL query:
   - You MUST NOT guess or assume the relationships between tables, such as foreign keys.
   - You MUST first use the tools to discover the table schemas to determine how they are related.
-  - For example, to generate a query joining 'Table_A' and 'Table_B' tables:
+  - For example, to generate a query joining 'Table_A' and 'Table_B':
     1. First, call \`listResources\` to get all available resource URIs.
-    2. Find the resources for the 'Table_A' table and the 'Table_B' table in the list. Look at the \`name\` and \`description\` to find the right ones.
-    3. Call \`readResource\` for each of these tables using their exact \`uri\` to get their schema information. This information will include columns and foreign key constraints.
-    4. Once you have the schema for both tables, analyze the foreign keys to understand how they connect.
-    5. Finally, write the SQL query using the correct column names and the join logic you discovered from the schemas.
+    2. Carefully examine the \`name\` and especially the \`description\` of all available resources. The descriptions are critical for understanding how tables are related. A resource might describe a join table (or linking table) that connects 'Table_A' and 'Table_B', even if it is not explicitly mentioned by the user.
+    3. Identify all resources needed for the query. This includes resources for 'Table_A', 'Table_B', and any linking tables (e.g., a 'Table_A_Table_B_join' table).
+    4. Call \`readResource\` for each of these tables using their exact \`uri\` to get their schema information. This information will include columns and foreign key constraints.
+    5. Once you have the schema for all required tables, analyze the foreign keys to understand how they connect.
+    6. Finally, write the SQL query using the correct column names and the join logic you discovered from the schemas.
   - If you are asked to generate a query but are missing information that you need, such as a schema or table name, you MUST return a generic query that the user can adapt. The query MUST include a placeholder and a comment indicating what information the user should substitute. For example, if the user asks for a query to list all tables in a schema but does not provide the schema name, you should respond with a query like this:
     \`\`\`sql
     SELECT table_name

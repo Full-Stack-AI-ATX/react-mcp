@@ -48,15 +48,15 @@ async function getUserInfo(uri: string, userName: string): Promise<any> {
             has_database_privilege(current_user, current_database(), 'CREATE')  AS can_create
         )
       SELECT
-        conn.*,
-        role_attrs.*,
-        role_memberships.member_of,
-        db_privileges.can_connect,
-        db_privileges.can_create
+        conn.*
+        -- role_attrs.*,
+        -- role_memberships.member_of,
+        -- db_privileges.can_connect,
+        -- db_privileges.can_create
       FROM conn
-      CROSS JOIN role_attrs
-      CROSS JOIN role_memberships
-      CROSS JOIN db_privileges;
+      -- CROSS JOIN role_attrs
+      -- CROSS JOIN role_memberships
+      -- CROSS JOIN db_privileges;
     `;
 
     if (result && result.length > 0) {

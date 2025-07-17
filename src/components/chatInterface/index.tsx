@@ -35,6 +35,15 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
   const [currentUsage, setCurrentUsage] = useState(0);
   const viewportRef                     = useRef<HTMLDivElement>(null);
   const formRef                         = useRef<HTMLFormElement>(null);
+  // AIDEV-NOTE: Auto-scroll control system using multiple refs to manage scroll behavior:
+  // - shouldAutoScrollRef: Controls whether auto-scroll is active (disabled when user scrolls up)
+  // - lastMessageIdRef: Tracks message IDs to distinguish new messages from streaming updates
+  // - justSubmittedRef: Forces scroll to bottom when user submits (regardless of current position)
+  // - lastAutoScrollTimeRef: Throttles streaming auto-scroll to prevent conflict with user actions
+  const shouldAutoScrollRef             = useRef(true);
+  const lastMessageIdRef                = useRef<string>('');
+  const justSubmittedRef                = useRef(false);
+  const lastAutoScrollTimeRef           = useRef(0);
 
   useEffect(() => {
     const primeChat = async () => {
@@ -89,26 +98,118 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
   };
 
   const hasMessages = messages.length > 0;
-  const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
 
+  // AIDEV-NOTE: Smart auto-scroll system that handles both new messages and streaming updates.
+  // Key behaviors:
+  // 1. New message (different ID): Force scroll if user just submitted, or auto-scroll for assistant
+  // 2. Streaming update (same ID): Throttled auto-scroll only if user hasn't scrolled up
+  // 3. Respects user control: No auto-scroll when shouldAutoScrollRef is false
   useEffect(() => {
     const viewport = viewportRef.current;
+    const lastMessage = messages[messages.length - 1];
+    const lastMessageId = lastMessage?.id || '';
+
     if (!viewport) return;
 
-    const handleScroll = () => {
-      const isAtBottom = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight < 1;
-      setAutoScrollEnabled(isAtBottom);
+    // Handle new message (different message ID)
+    if (lastMessageId && lastMessageId !== lastMessageIdRef.current) {
+      lastMessageIdRef.current = lastMessageId;
+
+      // Force scroll and re-enable auto-scroll when user submits
+      if (justSubmittedRef.current) {
+        shouldAutoScrollRef.current = true;
+        viewport.scrollTop = viewport.scrollHeight;
+        justSubmittedRef.current = false;
+      }
+      // Auto-scroll for new assistant messages (if enabled)
+      else if (lastMessage?.role === 'assistant' && shouldAutoScrollRef.current) {
+        viewport.scrollTop = viewport.scrollHeight;
+      }
+    }
+    // Handle streaming updates (same message ID, growing content)
+    else if (lastMessage && shouldAutoScrollRef.current) {
+      const now = Date.now();
+      const timeSinceLastScroll = now - lastAutoScrollTimeRef.current;
+
+      // Throttle auto-scroll to prevent interference with user scroll events
+      if (timeSinceLastScroll < 100) return;
+
+      // Defer scroll to give user events priority
+      setTimeout(() => {
+        if (shouldAutoScrollRef.current && viewport) {
+          viewport.scrollTop = viewport.scrollHeight;
+          lastAutoScrollTimeRef.current = Date.now();
+        }
+      }, 50);
+    }
+  }, [messages]);
+
+  // AIDEV-NOTE: Auto-scroll for data updates (tool results, metadata) when no new messages
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport || !shouldAutoScrollRef.current || !data) return;
+
+    viewport.scrollTop = viewport.scrollHeight;
+  }, [data]);
+
+  // AIDEV-NOTE: User scroll detection system with multi-layered event handling.
+  // Only runs when messages exist (ScrollArea is rendered). Handles both intent and position:
+  // - Scroll events: Update shouldAutoScrollRef based on position (bottom = true, up = false)
+  // - Wheel/touch events: Immediately disable auto-scroll when user shows scroll intent
+  // - Retry mechanism: Handles timing issues where viewport isn't ready on first attempt
+  useEffect(() => {
+    if (!hasMessages) return;
+
+    const setupListeners = () => {
+      const viewport = viewportRef.current;
+      if (!viewport) return null;
+
+      const handleScroll = () => {
+        const isAtBottom = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight < 5;
+        shouldAutoScrollRef.current = isAtBottom;
+      };
+
+      const handleUserScrollIntent = () => {
+        // Immediately disable auto-scroll when user initiates any scroll gesture
+        if (shouldAutoScrollRef.current) {
+          shouldAutoScrollRef.current = false;
+        }
+      };
+
+      viewport.addEventListener('scroll', handleScroll, { passive: true });
+      viewport.addEventListener('wheel', handleUserScrollIntent, { passive: true });
+      viewport.addEventListener('touchstart', handleUserScrollIntent, { passive: true });
+      viewport.addEventListener('touchmove', handleUserScrollIntent, { passive: true });
+
+      return () => {
+        viewport.removeEventListener('scroll', handleScroll);
+        viewport.removeEventListener('wheel', handleUserScrollIntent);
+        viewport.removeEventListener('touchstart', handleUserScrollIntent);
+        viewport.removeEventListener('touchmove', handleUserScrollIntent);
+      };
     };
 
-    if (autoScrollEnabled) {
-      viewport.scrollTop = viewport.scrollHeight;
-    }
+    // Try immediate setup, fallback to retry if viewport not ready
+    let cleanup = setupListeners();
+    if (cleanup) return cleanup;
 
-    viewport.addEventListener('scroll', handleScroll);
-    return () => viewport.removeEventListener('scroll', handleScroll);
-  }, [messages, data, autoScrollEnabled]);
+    const retryTimeout = setTimeout(() => {
+      cleanup = setupListeners();
+    }, 100);
 
-  const clearHistory = () => setMessages([]);
+    return () => {
+      clearTimeout(retryTimeout);
+      if (cleanup) cleanup();
+    };
+  }, [hasMessages]);
+
+  // AIDEV-NOTE: Reset all chat state and scroll control refs
+  const clearHistory = () => {
+    setMessages([]);
+    lastMessageIdRef.current = '';
+    shouldAutoScrollRef.current = true;
+    justSubmittedRef.current = false;
+  };
 
   const handleExecuteQuery = async (sql: string) => {
     await append({
@@ -229,6 +330,9 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
             ref={formRef}
             className={styles['inputContainer']}
             onSubmit={(e) => {
+              // AIDEV-NOTE: When the user submits a new prompt, mark that we just submitted
+              // so the next message effect will force scroll to bottom
+              justSubmittedRef.current = true;
               setData(undefined);
               handleSubmit(e);
             }}
@@ -274,6 +378,9 @@ function ChatInterface({ activeTopic }: ChatInterfaceProps) {
         ref={formRef}
         className={styles['inputContainer']}
         onSubmit={(e) => {
+          // AIDEV-NOTE: When the user submits a new prompt, mark that we just submitted
+          // so the next message effect will force scroll to bottom
+          justSubmittedRef.current = true;
           setData(undefined);
           handleSubmit(e);
         }}

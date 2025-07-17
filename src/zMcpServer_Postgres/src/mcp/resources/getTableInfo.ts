@@ -129,8 +129,7 @@ async function getTableInfo(uri: string, dbName: string, schemaName: string, tab
             tablename    AS table_name,
             jsonb_agg(
               jsonb_build_object(
-                'index_name', indexname,
-                'definition', indexdef
+                'index_name', indexname
               )
             ) AS indexes
           FROM pg_indexes

@@ -33,33 +33,7 @@ async function getSchemaInfo(uri: string, dbName: string, schemaName: string): P
           GROUP BY n.nspname
         ),
 
-        -- 3) Break out the raw ACL items for the schema
-        schema_acl AS (
-          SELECT
-            n.nspname                                   AS schema_name,
-            split_part(acl_item::text, '=', 1)          AS grantee,
-            split_part(split_part(acl_item::text, '/',1), '=',2) AS priv_bits
-          FROM pg_namespace n
-          CROSS JOIN unnest(coalesce(n.nspacl, array[]::aclitem[])) AS acl_item
-          WHERE n.nspname = ${schemaName}
-        ),
-
-        -- 4) Decode USAGE (U) and CREATE (C) bits into JSON
-        privileges AS (
-          SELECT
-            schema_name,
-            jsonb_agg(
-              jsonb_build_object(
-                'grantee',      grantee,
-                'grant_usage',  (priv_bits LIKE '%U%'),
-                'grant_create', (priv_bits LIKE '%C%')
-              )
-            ) AS privileges
-          FROM schema_acl
-          GROUP BY schema_name
-        ),
-
-        -- 5) Tables in the schema
+        -- 3) Tables in the schema
         tbls AS (
           SELECT
             t.table_schema,
@@ -70,7 +44,7 @@ async function getSchemaInfo(uri: string, dbName: string, schemaName: string): P
           GROUP BY t.table_schema
         ),
 
-        -- 6) Views in the schema
+        -- 4) Views in the schema
         vws AS (
           SELECT
             v.table_schema,
@@ -80,7 +54,7 @@ async function getSchemaInfo(uri: string, dbName: string, schemaName: string): P
           GROUP BY v.table_schema
         ),
 
-        -- 7) Sequences in the schema
+        -- 5) Sequences in the schema
         seqs AS (
           SELECT
             s.sequence_schema,
@@ -90,7 +64,7 @@ async function getSchemaInfo(uri: string, dbName: string, schemaName: string): P
           GROUP BY s.sequence_schema
         ),
 
-        -- 8) Routines (functions & procedures) in the schema
+        -- 6) Routines (functions & procedures) in the schema
         rts AS (
           SELECT
             r.routine_schema,
@@ -111,7 +85,6 @@ async function getSchemaInfo(uri: string, dbName: string, schemaName: string): P
           'schema',     sch.schema_name,
           'owner',      sch.schema_owner,
           'size',       coalesce(ss.size,        '0 bytes'),
-          'privileges', coalesce(p.privileges,   '[]'::jsonb),
           'tables',     coalesce(tbls.tables,    '[]'::jsonb),
           'views',      coalesce(vws.views,      '[]'::jsonb),
           'sequences',  coalesce(seqs.sequences, '[]'::jsonb),
@@ -119,7 +92,6 @@ async function getSchemaInfo(uri: string, dbName: string, schemaName: string): P
         ) AS schema_info
       FROM sch
       LEFT JOIN schema_size ss  ON ss.schema_name  = sch.schema_name
-      LEFT JOIN privileges p    ON p.schema_name   = sch.schema_name
       LEFT JOIN tbls           ON tbls.table_schema = sch.schema_name
       LEFT JOIN vws            ON vws.table_schema  = sch.schema_name
       LEFT JOIN seqs           ON seqs.sequence_schema = sch.schema_name

@@ -7,7 +7,11 @@ const cache = new Map<string, any>();
 // Prime the cache with the database schema info.
 type DbSchemaTableMap = {
   [name: string]: {
-    tableList: string[];
+    description: string;
+    tables: {
+      name: string;
+      description: string;
+    }[];
   };
 };
 
@@ -17,41 +21,46 @@ async function primeCache(sql: Sql): Promise<void> {
 
   try {
     const query = sql`
-      WITH user_schemas AS (
-        SELECT nspname
-        FROM pg_namespace
-        WHERE
-          nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
-          AND nspname NOT LIKE 'pg_temp_%'
-          AND nspname NOT LIKE 'pg_toast_temp_%'
-      ),
-      tables_in_schemas AS (
-        SELECT
-          n.nspname AS table_schema,
-          json_agg(c.relname ORDER BY c.relname) AS table_list
-        FROM pg_class c
-        JOIN pg_namespace n ON n.oid = c.relnamespace
-        WHERE
-          -- Only consider tables within the schemas we care about
-          n.nspname IN (SELECT nspname FROM user_schemas)
-          -- 'r' indicates an ordinary table
-          AND c.relkind = 'r'
-        GROUP BY
-          n.nspname
-      )
       SELECT
         COALESCE(
-          (
-            SELECT
-              json_object_agg(
-                us.nspname,
-                json_build_object('tableList', COALESCE(tis.table_list, '[]'::json))
-              )
-            FROM user_schemas us
-            LEFT JOIN tables_in_schemas tis ON us.nspname = tis.table_schema
+          json_object_agg(
+            T.schema_name,
+            json_build_object(
+              'description', T.schema_description,
+              'tables', T.table_list
+            )
           ),
           '{}'::json
-        ) AS db_schema_table_map;
+        ) AS db_schema_table_map
+      FROM (
+        SELECT
+          n.nspname AS schema_name,
+          COALESCE(sd.description, '') AS schema_description,
+          COALESCE(
+            json_agg(
+              json_build_object(
+                'name', c.relname,
+                'description', COALESCE(td.description, '')
+              ) ORDER BY c.relname
+            ) FILTER (WHERE c.relname IS NOT NULL),
+            '[]'::json
+          ) AS table_list
+        FROM
+          pg_namespace n
+        LEFT JOIN
+          pg_description sd ON sd.objoid = n.oid AND sd.objsubid = 0
+        LEFT JOIN
+          pg_class c ON n.oid = c.relnamespace AND c.relkind = 'r'
+        LEFT JOIN
+          pg_description td ON td.objoid = c.oid AND td.objsubid = 0
+        WHERE
+          n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+          AND n.nspname NOT LIKE 'pg_temp_%'
+          AND n.nspname NOT LIKE 'pg_toast_temp_%'
+        GROUP BY
+          n.nspname,
+          sd.description
+      ) AS T;
     `;
 
     const result = await query;
